@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+</head>
+<style>
+.btn {
+background-color: #7452D5 ;
+padding: 10px;
+margin: 20px;
+}
+</style>
+<body>
+<div class = 'button-div'>
+  <button class = 'btn'>Показать размеры экрана</button>
+</div>
+
+<script type = "text/javascript">
+let btn = document.querySelector('.btn');
+btn.addEventListener('click', () => {
+  alert(`
+  Ширина экрана ${window.screen.width} пикселей.
+  Высота экрана ${window.screen.height} пикселей`)
+})
+
+
+</script>
+</body>
+</html>

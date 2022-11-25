@@ -1,0 +1,160 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+</head>
+<body>
+<style>
+.chat-frame {
+  width: 300px;
+  height: 420px;
+  border: solid 1px #8794B0;
+  padding: 10px;
+  border-radius: 3px;
+}
+.mes-enter {
+  height: 20px;
+  width: 190px;
+  padding: 5px;
+  border: solid 2px #8794B0;
+  border-radius: 3px;
+}
+.btn-enter {
+  height: 33px;
+  width: 90px;
+  background: #8794B0;
+  color: white;
+  border: solid 2px #8794B0;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.btn-enter:hover {
+  background: #C6D2EC;
+  color: black;
+}
+.chat {
+  margin-top: 10px;
+  height: 330px;
+  border: solid 2px #8794B0;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+
+.btn-geo {
+  width: 100%;
+  border-radius: 3px;
+  margin-top: 7px;
+  background-color: #D6D9E0;
+  border: 2px solid #8794B0;
+  color: black;
+  cursor: pointer;
+}
+.btn-geo:hover {
+  background: #8794B0;
+  color: white;
+}
+.pre {
+  margin: 7px;
+  padding: 7px;
+  width: 120px;
+  color: blue;
+  border: 2px solid #8794B0;
+  border-radius: 15px;
+  background-color: #D4DFF7;
+}
+.connection {
+  margin: 0 auto;
+  text-align: center;
+}
+</style>
+<main>
+  <div class = 'chat-frame'>
+    <input class = 'mes-enter' placeholder = 'Введите сообщение..'>
+    <button class = 'btn-enter'>Отправить</button>
+    <button class = 'btn-geo'>Отправить моё месторасположение</button>
+    <div class = 'chat'></div>
+    <div class = "connection"></div>
+  </div>
+</main>
+
+<script type = "text/javascript">
+
+
+const wsUrl = 'wss://echo-ws-service.herokuapp.com';
+
+let btn = document.querySelector('.btn-enter');
+let status = document.querySelector('.connection');
+let output = document.querySelector('.chat');
+let geo = document.querySelector('.btn-geo');
+let pre;
+//Функция отображения результата на странице
+function writeToChat(message) {
+  pre = document.createElement("p");
+  pre.classList.add('pre');
+  pre.style.wordWrap = "break-word";
+  pre.innerText = message;
+  output.appendChild(pre);
+}
+
+let websocket = new WebSocket(wsUrl);
+websocket.onopen = (event) => {
+  status.innerText = 'Соединение окрыто';
+}
+websocket.onmessage = (event) => {
+  writeToChat(event.data)
+}
+websocket.onerror = (event) => {
+  writeToChat('Ошибка соединения')
+}
+websocket.onclose = (event) => {
+  status.innerText = 'Соединение закрыто';
+}
+const error = () => {
+	let textError = 'Невозможно получить ваше местоположение';
+	writeToChat(textError);
+  pre.style.alignSelf = 'flex-end';
+  };
+
+//функция получения и отображения гео-локации 
+const geoPosition = (position) => {
+  let longitude = position.coords.longitude;
+  let latitude  = position.coords.latitude;
+  console.log(latitude, longitude);
+  
+  let geoURL = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
+  pre = document.createElement("div");
+  pre.classList.add('pre');
+  pre.innerHTML = `
+  <a target = '_blank' href = ${geoURL}>Гео-локация</a>`;
+  pre.style.alignSelf = 'flex-end';
+  output.appendChild(pre);
+}
+
+
+//Обработчик на кнопку "Отправить"
+btn.addEventListener('click', () => {
+  let input = document.querySelector('.mes-enter');
+  if (!input.value) return;
+  websocket.send(input.value);
+	writeToChat(input.value);
+  pre.style.alignSelf = 'flex-end';
+  input.value = ''
+})
+
+//Обработчик на кнопку "Отправить моё месторасположение"
+geo.addEventListener('click', () => {
+  if (!navigator.geolocation) {
+    pre.textContent = 'Geolocation не поддерживается вашим браузером';
+  } else {
+   navigator.geolocation.getCurrentPosition(geoPosition, error); 
+  }
+});
+
+</script>
+</body>
+</html>
